@@ -3,6 +3,9 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+// Jenis database Enesis (default sama dengan Oasis), untuk charset/port bawaan koneksi "enesis".
+$enesisPgsql = env('ENESIS_DB_CONNECTION', env('DB_CONNECTION', 'mysql')) === 'pgsql';
+
 return [
 
     /*
@@ -70,19 +73,20 @@ return [
             'driver' => env('ENESIS_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
             'url' => env('ENESIS_DB_URL'),
             'host' => env('ENESIS_DB_HOST', env('DB_HOST', '127.0.0.1')),
-            'port' => env('ENESIS_DB_PORT', env('DB_PORT', '3306')),
+            'port' => env('ENESIS_DB_PORT', env('DB_PORT', $enesisPgsql ? '5432' : '3306')),
             'database' => env('ENESIS_DB_DATABASE', 'enesis'),
             'username' => env('ENESIS_DB_USERNAME', env('DB_USERNAME', 'root')),
             'password' => env('ENESIS_DB_PASSWORD', env('DB_PASSWORD', '')),
             'unix_socket' => env('ENESIS_DB_SOCKET', env('DB_SOCKET', '')),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            // PostgreSQL memakai "utf8", MySQL/MariaDB "utf8mb4".
+            'charset' => env('ENESIS_DB_CHARSET', $enesisPgsql ? 'utf8' : 'utf8mb4'),
+            'collation' => $enesisPgsql ? null : env('ENESIS_DB_COLLATION', 'utf8mb4_unicode_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'search_path' => 'public',
-            'sslmode' => 'prefer',
+            'search_path' => env('ENESIS_DB_SCHEMA', 'public'),
+            'sslmode' => env('ENESIS_DB_SSLMODE', 'prefer'),
         ],
 
         'mariadb' => [
