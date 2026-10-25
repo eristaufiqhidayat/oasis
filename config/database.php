@@ -64,6 +64,27 @@ return [
             ]) : [],
         ],
 
+        // Database Enesis yang sedang berjalan, sumber untuk: php artisan oasis:salin-dari-enesis.
+        // Default memakai host/user/password yang sama dengan DB_* (satu server MySQL, database "enesis").
+        'enesis' => [
+            'driver' => env('ENESIS_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
+            'url' => env('ENESIS_DB_URL'),
+            'host' => env('ENESIS_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('ENESIS_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('ENESIS_DB_DATABASE', 'enesis'),
+            'username' => env('ENESIS_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('ENESIS_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('ENESIS_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

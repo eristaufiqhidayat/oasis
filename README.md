@@ -119,6 +119,24 @@ Seeder data besar bisa dijalankan ulang sendiri:
 php artisan db:seed --class=MarketamaDataSeeder
 ```
 
+## Salin data terbaru dari Enesis yang sedang berjalan (`oasis:salin-dari-enesis`)
+
+Data yang ditulis aplikasi HP dan admin ke Enesis (`users`, `roles`/`role_hak`, `trx_*`, `mk_*`, `mobile_*`, kuota
+motoris, pengaturan admin, tracking, `lap_*`) disalin dari database Enesis ke Oasis. Hanya tabel yang ada di kedua
+database yang disalin; tabel menu yang tidak dibawa ke Oasis dilewati. Sesi, cache, antrean, dan riwayat migration tidak disalin.
+
+```bash
+# .env Oasis: ENESIS_DB_DATABASE=nama_database_enesis
+# (ENESIS_DB_HOST/USERNAME/PASSWORD bila berbeda dari DB_*)
+php artisan migrate --force                         # pastikan skema Oasis terbaru dulu
+php artisan oasis:salin-dari-enesis --coba          # lihat jumlah baris Enesis vs Oasis
+php artisan oasis:salin-dari-enesis                 # salin semua (isi tabel Oasis diganti, minta konfirmasi)
+php artisan oasis:salin-dari-enesis --tabel=users --tabel=trx_absensi   # sebagian saja
+```
+
+ID asli ikut disalin, jadi relasi antar tabel tetap utuh. Perintah ini boleh diulang sampai aplikasi HP dipindah ke
+Oasis; setiap kali dijalankan, isi tabel Oasis yang disalin diganti dengan isi Enesis saat itu.
+
 ## Impor data dari folder lain
 
 Data juga bisa dimuat dari folder CSV mana pun (satu file per tabel, nama file = nama tabel):
