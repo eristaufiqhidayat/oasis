@@ -57,6 +57,8 @@ class SalinDariEnesis extends Command
 
         $db = DB::connection()->getDatabaseName();
         if (! $this->option('paksa') && ! $this->confirm('Isi '.count($tabel)." tabel di database Oasis ({$db}) akan DIGANTI dengan data Enesis. Lanjutkan?")) {
+            $this->warn('Dibatalkan, tidak ada data yang disalin. Ketik "yes" saat konfirmasi, atau pakai --paksa.');
+
             return self::FAILURE;
         }
 
@@ -69,6 +71,15 @@ class SalinDariEnesis extends Command
         }
 
         $this->info(sprintf('Selesai: %d tabel, %s baris disalin.', count($hasil), number_format(array_sum($hasil), 0, ',', '.')));
+
+        if ($gagal = $salin->gagal()) {
+            $this->error(count($gagal).' tabel gagal disalin (tabel lain tetap tersalin):');
+            $this->table(['Tabel', 'Error'], array_map(fn ($t, $e) => [$t, mb_strimwidth($e, 0, 300, '...')], array_keys($gagal), $gagal));
+            $this->line('Perbaiki penyebabnya lalu ulangi hanya tabel itu: php artisan oasis:salin-dari-enesis --tabel='.array_key_first($gagal));
+
+            return self::FAILURE;
+        }
+
         $this->line('Jalankan php artisan optimize:clear bila perlu. Pengguna perlu login ulang (sesi web tidak disalin).');
 
         return self::SUCCESS;

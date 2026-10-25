@@ -7,6 +7,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PDO;
+use Throwable;
 
 // Menyalin isi tabel dari database lain (Enesis) ke database Oasis (koneksi default).
 // - Hanya tabel yang ada di kedua database, dan hanya kolom yang ada di keduanya.
@@ -19,6 +20,11 @@ class SalinDatabase
         'migrations', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs', 'sessions', 'password_reset_tokens',
     ];
 
+    /** Tabel inti (akun, role, pengaturan) disalin paling awal supaya tidak tertunda tabel transaksi yang besar. */
+    public const DULUAN = [
+        'roles', 'role_hak', 'users', 'hierarki_sales', 'pengaturan_admin', 'master_kuota_motoris', 'mobile_tokens',
+    ];
+
     /** Batas placeholder per INSERT (aman untuk MySQL, PostgreSQL, dan SQLite). */
     private const MAKS_PLACEHOLDER = 30000;
 
@@ -27,6 +33,9 @@ class SalinDatabase
 
     /** @var list<string> */
     private array $hanyaDiSumber = [];
+
+    /** @var array<string, string> tabel gagal => pesan error */
+    private array $gagal = [];
 
     public function __construct(private readonly string $koneksiSumber, ?Closure $log = null)
     {
@@ -55,13 +64,21 @@ class SalinDatabase
 
         sort($tabel);
 
-        return $tabel;
+        $duluan = array_values(array_intersect(self::DULUAN, $tabel));
+
+        return [...$duluan, ...array_values(array_diff($tabel, $duluan))];
     }
 
     /** @return list<string> tabel di Enesis yang tidak ada di Oasis (menu yang tidak dibawa) */
     public function tabelHanyaDiSumber(): array
     {
         return $this->hanyaDiSumber;
+    }
+
+    /** @return array<string, string> tabel yang gagal disalin pada jalankan() terakhir => pesan error */
+    public function gagal(): array
+    {
+        return $this->gagal;
     }
 
     public function jumlah(?string $koneksi, string $tabel): int
@@ -76,12 +93,19 @@ class SalinDatabase
     public function jalankan(array $tabel): array
     {
         $hasil = [];
+        $this->gagal = [];
 
         Schema::disableForeignKeyConstraints();
 
         try {
+            // Satu tabel gagal tidak menghentikan tabel lain; daftar gagal dilaporkan di akhir.
             foreach ($tabel as $t) {
-                $hasil[$t] = $this->salinTabel($t);
+                try {
+                    $hasil[$t] = $this->salinTabel($t);
+                } catch (Throwable $e) {
+                    $this->gagal[$t] = $e->getMessage();
+                    ($this->log)("{$t}: GAGAL - ".mb_strimwidth($e->getMessage(), 0, 500, '...'));
+                }
             }
         } finally {
             Schema::enableForeignKeyConstraints();
