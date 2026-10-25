@@ -1,0 +1,48 @@
+name: Build aset untuk server
+
+# Setiap push ke main: build aset frontend (Vite) lalu simpan ke branch "deploy"
+# (isi main + folder public/build). Server yang tidak punya Node.js cukup menarik branch deploy.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-deploy
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependensi npm
+        run: npm ci
+
+      - name: Build aset frontend
+        run: npm run build
+
+      - name: Pastikan manifest ada
+        run: test -f public/build/manifest.json
+
+      - name: Simpan ke branch deploy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B deploy
+          git add -f public/build
+          git commit -m "Build aset dari ${GITHUB_SHA::7}"
+          git push -f origin deploy
