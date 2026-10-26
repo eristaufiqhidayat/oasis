@@ -23,12 +23,17 @@ class AttendanceController extends Controller
         return Inertia::render('Field/Attendance', [
             'filters' => ['tanggal' => $date->toDateString(), 'depot' => $depot],
             'depots' => $this->depotOptions($request),
-            'rows' => $employees->map(fn (Employee $e) => [
-                'id' => $e->id, 'name' => $e->name, 'code' => $e->code, 'depot' => $e->depot?->name,
-                'check_in' => $records[$e->id]?->check_in_at?->format('H:i'),
-                'check_out' => $records[$e->id]?->check_out_at?->format('H:i'),
-                'has_location' => $records[$e->id]?->check_in_latitude !== null,
-            ])->values(),
+            'rows' => $employees->map(function (Employee $e) use ($records) {
+                // Motoris yang belum absen tidak punya baris di $records.
+                $a = $records->get($e->id);
+
+                return [
+                    'id' => $e->id, 'name' => $e->name, 'code' => $e->code, 'depot' => $e->depot?->name,
+                    'check_in' => $a?->check_in_at?->format('H:i'),
+                    'check_out' => $a?->check_out_at?->format('H:i'),
+                    'has_location' => $a?->check_in_latitude !== null,
+                ];
+            })->values(),
             'summary' => ['present' => $records->count(), 'total' => $employees->count()],
         ]);
     }

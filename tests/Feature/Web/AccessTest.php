@@ -5,6 +5,7 @@ namespace Tests\Feature\Web;
 use App\Enums\Position;
 use App\Models\Trip;
 use App\Models\User;
+use App\Services\FieldService;
 use App\Services\TripService;
 use App\Support\Navigation;
 use Database\Seeders\DemoSeeder;
@@ -42,6 +43,18 @@ class AccessTest extends TestCase
         }
 
         $this->get('/laporan/penjualan/unduh?grup=salesman')->assertOk()->assertHeader('content-type', 'text/csv; charset=utf-8');
+    }
+
+    public function test_absensi_menampilkan_motoris_yang_belum_absen(): void
+    {
+        $this->seedReference();
+        $depot = $this->depot();
+        $this->salesman($depot);
+        $present = $this->salesman($depot);
+        app(FieldService::class)->checkIn($present, []);
+
+        $this->actingAs($this->admin()->forceFill(['must_change_password' => false]))->get('/absensi')->assertOk()
+            ->assertInertia(fn ($page) => $page->has('rows', 2)->where('summary.present', 1));
     }
 
     public function test_izin_peran_dan_cakupan_depo(): void
