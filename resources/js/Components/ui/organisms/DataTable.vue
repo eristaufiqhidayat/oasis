@@ -17,6 +17,11 @@ const props = defineProps({
     emptyText: { type: String, default: 'Tidak ada data.' },
     // Prop Inertia yang diambil ulang saat pindah halaman tabel (lihat Pagination).
     paginationOnly: { type: Array, default: () => [] },
+    // Kolom angka (rata kanan).
+    numeric: { type: Array, default: () => [] },
+    // false = tanpa footer total & pagination (daftar pendek yang tidak dipaginasi).
+    showFooter: { type: Boolean, default: true },
+    rowKey: { type: String, default: null },
 });
 
 // Kolom "Aksi" muncul bila halaman mengisi slot #aksi="{ row }".
@@ -43,13 +48,13 @@ function badgeVariant(column, value) {
         <table class="data-table">
             <thead>
                 <tr>
-                    <th v-for="label in Object.values(columns)" :key="label">{{ label }}</th>
+                    <th v-for="(label, column) in columns" :key="column" :class="{ 'text-end': numeric.includes(column) }">{{ label }}</th>
                     <th v-if="slots.aksi">Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(row, index) in rows" :key="index">
-                    <td v-for="column in Object.keys(columns)" :key="column">
+                <tr v-for="(row, index) in rows" :key="rowKey ? row[rowKey] : index">
+                    <td v-for="column in Object.keys(columns)" :key="column" :class="{ 'text-end': numeric.includes(column) }">
                         <slot v-if="slots[`cell-${column}`]" :name="`cell-${column}`" :row="row" />
                         <Badge v-else-if="badgeColumns.includes(column)" :variant="badgeVariant(column, row[column])">{{ row[column] || '-' }}</Badge>
                         <template v-else>{{ row[column] }}</template>
@@ -62,9 +67,10 @@ function badgeVariant(column, value) {
                     <td :colspan="Object.keys(columns).length + (slots.aksi ? 1 : 0)" class="text-center text-gray-500 py-4">{{ emptyText }}</td>
                 </tr>
             </tbody>
+            <tfoot v-if="slots.tfoot"><slot name="tfoot" /></tfoot>
         </table>
 
-        <template #footer>
+        <template v-if="showFooter" #footer>
             <div class="flex justify-between items-center">
                 <small class="text-gray-500">Total {{ formatTotal(total) }} data</small>
                 <Pagination :links="links" :only="paginationOnly" />

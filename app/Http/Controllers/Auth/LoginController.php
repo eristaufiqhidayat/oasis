@@ -3,74 +3,57 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Support\Akses\Akses;
+use App\Models\ActivityLog;
+use App\Support\Navigation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-// Login session berbasis username (akun hasil migrasi Marketama umumnya tanpa email).
 class LoginController extends Controller
 {
-    private const MAKS_PERCOBAAN = 5;
-
-    public function create(): Response
+    public function show(): Response
     {
-        return Inertia::render('Auth/Login', [
-            // Tombol demo hanya dikirim bila fitur demo aktif (config auth.demo_login).
-            'demoPeran' => config('auth.demo_login') ? config('auth.demo_peran') : null,
-        ]);
+        return Inertia::render('Auth/Login');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function login(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'username' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string'],
-        ], [], ['username' => 'username', 'password' => 'password']);
+        $credentials = $request->validate(['username' => ['required', 'string'], 'password' => ['required', 'string']]);
 
-        $kunci = Str::lower($data['username']).'|'.$request->ip();
-
-        if (RateLimiter::tooManyAttempts($kunci, self::MAKS_PERCOBAAN)) {
-            throw ValidationException::withMessages([
-                'username' => 'Terlalu banyak percobaan login. Coba lagi dalam '.RateLimiter::availableIn($kunci).' detik.',
-            ]);
+        if (! Auth::attempt($credentials + ['is_active' => true], $request->boolean('remember'))) {
+            throw ValidationException::withMessages(['username' => 'Username atau password salah, atau akun nonaktif.']);
         }
 
-        // Username tidak membedakan huruf besar/kecil (sama seperti aturan migrasi akun).
-        $user = User::whereRaw('lower(username) = ?', [Str::lower($data['username'])])->first();
+        $user = $request->user();
 
-        if (! $user || ! $user->aktif || ! Hash::check($data['password'], $user->password)) {
-            RateLimiter::hit($kunci, 60);
+        // Akun motoris (peran tanpa izin web) hanya memakai aplikasi HP.
+        if (! $user->role?->permissions) {
+            Auth::guard('web')->logout();
 
-            throw ValidationException::withMessages(['username' => 'Username atau password salah.']);
+            throw ValidationException::withMessages(['username' => 'Akun ini hanya untuk aplikasi HP motoris.']);
         }
 
-        RateLimiter::clear($kunci);
-
-        if (! Akses::bolehWeb($user)) {
-            throw ValidationException::withMessages(['username' => 'Akun ini hanya untuk aplikasi HP, tidak bisa membuka web Oasis.']);
-        }
-
-        Auth::login($user, $request->boolean('ingat'));
         $request->session()->regenerate();
-        $user->forceFill(['login_terakhir_pada' => now()])->save();
+        $user->forceFill(['last_login_at' => now()])->save();
+        ActivityLog::record('login', "{$user->username} masuk");
 
-        return redirect()->intended('/home');
+        return redirect()->intended($user->can('dashboard.view') ? '/home' : '/'.($this->firstPage($request) ?? 'ganti-password'));
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function logout(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/login');
+    }
+
+    private function firstPage(Request $request): ?string
+    {
+        return Navigation::flat($request->user())[0]['slug'] ?? null;
     }
 }

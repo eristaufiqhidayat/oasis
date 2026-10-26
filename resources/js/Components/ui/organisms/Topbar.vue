@@ -1,11 +1,17 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import Breadcrumb from '@/Components/ui/molecules/Breadcrumb.vue';
 import Icon from '@/Components/ui/atoms/Icon.vue';
 import Tooltip from '@/Components/ui/atoms/Tooltip.vue';
 
 defineProps({ breadcrumbSlug: { type: String, default: null } });
+
+const page = usePage();
+const bisa = (izin) => {
+    const daftar = page.props.auth?.user?.permissions ?? [];
+    return daftar.includes('*') || daftar.includes(izin);
+};
 
 const notifOpen = ref(false);
 const notifWrapper = ref(null);
@@ -21,15 +27,15 @@ onUnmounted(() => document.removeEventListener('click', closeNotifOnOutsideClick
 <template>
     <div class="topbar flex justify-between items-center gap-2 mb-3">
         <div>
-            <h3 class="font-bold topbar-title">Oasis Canvassing System</h3>
+            <h3 class="font-bold topbar-title">Oasis Canvassing</h3>
             <Breadcrumb :current-slug="breadcrumbSlug" />
         </div>
         <div class="flex items-center gap-2">
-            <Tooltip label="Tambah Barang Canvassing" align="end"><Link class="shortcut-btn" href="/barang_canvassing/add">
-                    <Icon name="boxes" />
+            <Tooltip v-if="bisa('trip.load')" label="Buat Muatan" align="end"><Link class="shortcut-btn" href="/muatan/baru" aria-label="Buat Muatan">
+                    <Icon name="truck" />
                 </Link></Tooltip>
-            <Tooltip label="Design Polygon Area" align="end"><Link class="shortcut-btn" href="/master_area/design_area">
-                    <Icon name="shapes" />
+            <Tooltip v-if="bisa('settlement.view')" label="Setoran Hari Ini" align="end"><Link class="shortcut-btn" href="/setoran" aria-label="Setoran Hari Ini">
+                    <Icon name="calculator" />
                 </Link></Tooltip>
             <div class="relative" ref="notifWrapper">
                 <Tooltip label="Notifikasi Transaksi" align="end"><a class="notif-bell" href="#"

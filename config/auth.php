@@ -43,9 +43,9 @@ return [
             'provider' => 'users',
         ],
 
-        // API mobile: token Bearer per HP (tabel mobile_tokens).
+        // API HP: token Bearer per perangkat (tabel api_tokens, lihat App\Support\Auth\ApiTokens).
         'mobile' => [
-            'driver' => 'mobile-token',
+            'driver' => 'api-token',
             'provider' => 'users',
         ],
     ],
@@ -122,34 +122,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Akun admin awal (UserSeeder)
+    | Akun admin awal (DatabaseSeeder)
     |--------------------------------------------------------------------------
     |
-    | Password akun "admin" yang dibuat UserSeeder. Kosong = di lokal memakai
-    | "password", di production akun tidak dibuat.
+    | Password akun "admin" yang dibuat seeder. Kosong = "password" dan akun
+    | wajib ganti password saat pertama masuk.
     |
     */
 
     'seed_admin_password' => env('SEED_ADMIN_PASSWORD'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Demo masuk cepat
-    |--------------------------------------------------------------------------
-    |
-    | Tombol "Demo masuk cepat" di halaman login: masuk tanpa password sebagai
-    | akun demo per peran (demo.super_admin, demo.koordinator, ...). Bawaan hanya
-    | aktif di APP_ENV=local. Jangan nyalakan di server yang berisi data asli.
-    |
-    */
-
-    'demo_login' => (bool) env('DEMO_LOGIN', env('APP_ENV') === 'local'),
-
-    'demo_peran' => [
-        'super_admin' => 'Super Admin',
-        'koordinator' => 'Koordinator',
-        'sales' => 'Sales',
-        'lainnya' => 'Lainnya',
-    ],
 
 ];

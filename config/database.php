@@ -4,7 +4,7 @@ use Illuminate\Support\Str;
 use Pdo\Mysql;
 
 // Jenis database Enesis (default sama dengan Oasis), untuk charset/port bawaan koneksi "enesis".
-$enesisPgsql = env('ENESIS_DB_CONNECTION', env('DB_CONNECTION', 'mysql')) === 'pgsql';
+$legacyPgsql = env('LEGACY_DB_CONNECTION', env('DB_CONNECTION', 'mysql')) === 'pgsql';
 
 return [
 
@@ -69,24 +69,25 @@ return [
 
         // Database Enesis yang sedang berjalan, sumber untuk: php artisan oasis:salin-dari-enesis.
         // Default memakai host/user/password yang sama dengan DB_* (satu server MySQL, database "enesis").
-        'enesis' => [
-            'driver' => env('ENESIS_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
-            'url' => env('ENESIS_DB_URL'),
-            'host' => env('ENESIS_DB_HOST', env('DB_HOST', '127.0.0.1')),
-            'port' => env('ENESIS_DB_PORT', env('DB_PORT', $enesisPgsql ? '5432' : '3306')),
-            'database' => env('ENESIS_DB_DATABASE', 'enesis'),
-            'username' => env('ENESIS_DB_USERNAME', env('DB_USERNAME', 'root')),
-            'password' => env('ENESIS_DB_PASSWORD', env('DB_PASSWORD', '')),
-            'unix_socket' => env('ENESIS_DB_SOCKET', env('DB_SOCKET', '')),
+        // Database aplikasi lama untuk: php artisan oasis:impor-master (hanya dibaca).
+        'legacy' => [
+            'driver' => env('LEGACY_DB_CONNECTION', env('DB_CONNECTION', 'mysql')),
+            'url' => env('LEGACY_DB_URL'),
+            'host' => env('LEGACY_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('LEGACY_DB_PORT', env('DB_PORT', $legacyPgsql ? '5432' : '3306')),
+            'database' => env('LEGACY_DB_DATABASE', 'oasis_lama'),
+            'username' => env('LEGACY_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('LEGACY_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('LEGACY_DB_SOCKET', env('DB_SOCKET', '')),
             // PostgreSQL memakai "utf8", MySQL/MariaDB "utf8mb4".
-            'charset' => env('ENESIS_DB_CHARSET', $enesisPgsql ? 'utf8' : 'utf8mb4'),
-            'collation' => $enesisPgsql ? null : env('ENESIS_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'charset' => env('LEGACY_DB_CHARSET', $legacyPgsql ? 'utf8' : 'utf8mb4'),
+            'collation' => $legacyPgsql ? null : env('LEGACY_DB_COLLATION', 'utf8mb4_unicode_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'search_path' => env('ENESIS_DB_SCHEMA', 'public'),
-            'sslmode' => env('ENESIS_DB_SSLMODE', 'prefer'),
+            'search_path' => env('LEGACY_DB_SCHEMA', 'public'),
+            'sslmode' => env('LEGACY_DB_SSLMODE', 'prefer'),
         ],
 
         'mariadb' => [

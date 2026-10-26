@@ -6,17 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // Peran = kumpulan izin (kunci di config/permissions.php). Peran sistem tidak bisa dihapus.
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('slug', 50)->unique();
+            $table->string('name', 100);
+            $table->string('description')->nullable();
+            $table->json('permissions');
+            $table->boolean('is_system')->default(false);
+            $table->timestamps();
+        });
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('username', 60)->unique();
+            $table->string('email')->nullable()->unique();
             $table->string('password');
+            $table->foreignId('role_id')->constrained()->restrictOnDelete();
+            // Karyawan yang dipakai akun ini (wajib untuk login HP). FK ditambah setelah tabel employees dibuat.
+            $table->unsignedBigInteger('employee_id')->nullable()->unique();
+            // true = boleh melihat semua depo; false = hanya depo di pivot depot_user.
+            $table->boolean('all_depots')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->boolean('must_change_password')->default(false);
+            $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -37,13 +53,11 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('roles');
     }
 };
