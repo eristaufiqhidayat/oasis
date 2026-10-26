@@ -36,8 +36,8 @@ return [
     // dengan awalan "* " (belum terhubung ke motoris / tidak berhubungan). Tambahkan slug di sini saat menunya
     // dialihkan ke data motoris.
     'menu_motoris' => [
-        // Utama
-        'monitoring_harian_sales', 'rekap_pencapaian_sku', 'summary_all_depo', 'motoris_report',
+        // Utama (Beranda = halaman awal setelah login)
+        'home', 'monitoring_harian_sales', 'rekap_pencapaian_sku', 'summary_all_depo', 'motoris_report',
         // Canvassing
         'checkin_depo', 'lap_checkin_checkout', 'tracking_sales_history_location', 'tracking_koordinator_history_location',
         // Aktivitas Canvas

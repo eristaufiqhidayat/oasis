@@ -23,15 +23,17 @@ class MenuMotorisTest extends TestCase
         return $hasil;
     }
 
-    public function test_menu_belum_terhubung_motoris_diberi_bintang(): void
+    public function test_oasis_hanya_berisi_menu_terhubung_motoris_tanpa_bintang(): void
     {
         $judul = $this->judul();
 
-        $this->assertSame('* Loading Barang', $judul['loading_barang']);
-        $this->assertSame('* Outlet Duplikat / Fiktif', $judul['outlet_duplikat']);
+        // Menu bertanda "*" di Enesis tidak dibawa ke Oasis, jadi tidak ada judul berawalan "* ".
+        $this->assertEmpty(array_filter($judul, fn ($t) => str_starts_with($t, '* ')));
+        $this->assertArrayNotHasKey('loading_barang', $judul);
+        $this->assertArrayNotHasKey('outlet_duplikat', $judul);
+        $this->assertSame('Beranda', $judul['home']);
         $this->assertSame('Stok Kompetitor', $judul['stok_kompetitor']);
         $this->assertSame('Lap. Join Visit', $judul['lap_join_visit']);
-        $this->assertSame('Checkin Outlet', $judul['checkin_outlet']);
         $this->assertSame('Summary All Depo', $judul['summary_all_depo']);
         $this->assertSame('Join Visit', $judul['join_visit']);
     }
