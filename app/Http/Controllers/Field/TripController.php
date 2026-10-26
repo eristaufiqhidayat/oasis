@@ -42,9 +42,12 @@ class TripController extends Controller
             'depots' => $this->depotOptions($request),
             'statuses' => self::options(TripStatus::options()),
             'trips' => $trips->map(fn (Trip $t) => $this->summaryRow($t))->values(),
-            'withoutTrip' => Employee::visibleTo($request->user())->salesmen()->active()
+            // Motoris aktif tanpa muatan, dikelompokkan per depo: [{depot, names}].
+            'withoutTrip' => Employee::visibleTo($request->user())->salesmen()->active()->with('depot:id,name')
                 ->when($depot, fn ($q) => $q->where('depot_id', $depot))
-                ->whereNotIn('id', $loadedIds)->orderBy('name')->pluck('name'),
+                ->whereNotIn('id', $loadedIds)->orderBy('name')->get(['id', 'name', 'depot_id'])
+                ->groupBy(fn ($e) => $e->depot?->name ?? 'Tanpa depo')->sortKeys()
+                ->map(fn ($rows, $name) => ['depot' => $name, 'names' => $rows->pluck('name')->values()])->values(),
             'canLoad' => $request->user()->can('trip.load'),
         ]);
     }
