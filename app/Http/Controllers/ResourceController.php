@@ -130,7 +130,7 @@ abstract class ResourceController extends Controller
                 'canManage' => $canManage,
             ],
             'rows' => $rows,
-            'query' => $request->only(array_merge(['q'], array_column($this->filters($request), 'name'))),
+            'query' => (object) $request->only(array_merge(['q'], array_column($this->filters($request), 'name'))),
         ]);
     }
 

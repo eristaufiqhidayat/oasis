@@ -27,7 +27,8 @@ const props = defineProps({
 
 const appName = usePage().props.appName;
 const terbuka = ref(false);
-const hariIni = new Date().toISOString().slice(0, 10);
+const sekarang = new Date();
+const hariIni = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}-${String(sekarang.getDate()).padStart(2, '0')}`;
 const form = useForm({ depot_id: props.filters.depot ?? props.depots[0]?.value ?? null, type: 'receipt', date: hariIni, reference: '', note: '', lines: [{ product_id: null, quantity: '' }] });
 
 function buka(type) {

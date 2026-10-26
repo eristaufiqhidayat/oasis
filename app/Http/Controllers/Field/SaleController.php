@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Field;
 
-use App\Enums\PaymentMethod;
 use App\Enums\SaleStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
@@ -62,7 +61,6 @@ class SaleController extends Controller
                 ]),
             ],
             'canVoid' => $request->user()->can('sale.void') && $sale->status === SaleStatus::Completed,
-            'paymentMethods' => PaymentMethod::options(),
         ]);
     }
 

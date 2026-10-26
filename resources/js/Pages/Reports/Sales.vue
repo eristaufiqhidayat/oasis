@@ -38,7 +38,7 @@ const judulKolom = props.groups.find((g) => g.value === props.filters.grup)?.lab
         <DataTable :columns="{ label: judulKolom, code: 'Kode', transactions: 'Transaksi', quantity: 'Qty', revenue: 'Nilai' }" :rows="rows" :total="rows.length" :show-footer="false" :numeric="['transactions', 'quantity', 'revenue']">
             <template #header>
                 <FilterBar url="/laporan/penjualan" :fields="[
-                    { name: 'grup', label: 'Kelompokkan', type: 'select', options: groups, placeholder: 'Per hari' },
+                    { name: 'grup', label: 'Kelompokkan', type: 'select', options: groups, placeholder: false },
                     { name: 'dari', label: 'Dari', type: 'date' },
                     { name: 'sampai', label: 'Sampai', type: 'date' },
                     { name: 'depot', label: 'Depo', type: 'select', options: depots },

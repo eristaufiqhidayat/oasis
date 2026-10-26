@@ -43,7 +43,7 @@ function kirim() {
 
         <DataTable :columns="kolom" :rows="outlets.data" :total="outlets.total" :links="outlets.links" row-key="id" empty-text="Tidak ada outlet baru.">
             <template #header>
-                <FilterBar url="/outlet-baru" :fields="[{ name: 'status', label: 'Status', type: 'select', options: statuses, placeholder: 'Menunggu' }, { name: 'depot', label: 'Depo', type: 'select', options: depots }]" :values="filters" />
+                <FilterBar url="/outlet-baru" :fields="[{ name: 'status', label: 'Status', type: 'select', options: statuses, placeholder: false }, { name: 'depot', label: 'Depo', type: 'select', options: depots }]" :values="filters" />
             </template>
             <template #cell-name="{ row }">
                 {{ row.name }}<br><small class="text-gray-500">{{ row.phone ?? '' }}</small>

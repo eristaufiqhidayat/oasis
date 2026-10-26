@@ -1,6 +1,6 @@
 <script setup>
 // Baris filter halaman daftar. fields: [{ name, label, type: 'date'|'month'|'select'|'combobox'|'search', options?, placeholder? }].
-// Pilihan select/tanggal langsung diterapkan; kolom cari diterapkan dengan Enter atau tombol Tampilkan.
+// placeholder: false = select tanpa pilihan "Semua". Pilihan select/tanggal langsung diterapkan; kolom cari diterapkan dengan Enter atau tombol Tampilkan.
 import { reactive } from 'vue';
 import { router } from '@inertiajs/vue3';
 import Button from '@/Components/ui/atoms/Button.vue';
@@ -31,7 +31,7 @@ function terapkan() {
     <form class="filter-bar" @submit.prevent="terapkan">
         <div v-for="f in fields" :key="f.name" class="filter-field" :class="{ 'filter-field-wide': f.type === 'search' || f.type === 'combobox' }">
             <Label :for="`filter-${f.name}`">{{ f.label }}</Label>
-            <Select v-if="f.type === 'select'" :id="`filter-${f.name}`" v-model="nilai[f.name]" :options="f.options" :placeholder="f.placeholder ?? 'Semua'" @update:model-value="terapkan" />
+            <Select v-if="f.type === 'select'" :id="`filter-${f.name}`" v-model="nilai[f.name]" :options="f.options" :placeholder="f.placeholder === false ? null : (f.placeholder ?? 'Semua')" @update:model-value="terapkan" />
             <Combobox v-else-if="f.type === 'combobox'" :id="`filter-${f.name}`" v-model="nilai[f.name]" :options="f.options" :placeholder="f.placeholder ?? 'Semua'" @update:model-value="terapkan" />
             <Input v-else-if="f.type === 'date' || f.type === 'month'" :id="`filter-${f.name}`" v-model="nilai[f.name]" :type="f.type" @change="terapkan" />
             <Input v-else :id="`filter-${f.name}`" v-model="nilai[f.name]" type="search" :placeholder="f.placeholder ?? 'Cari...'" />

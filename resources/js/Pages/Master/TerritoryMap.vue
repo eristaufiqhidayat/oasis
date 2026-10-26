@@ -75,7 +75,7 @@ function gambarArea(sesuaikan = false) {
 
     if (sesuaikan) {
         const semua = [...batas, ...props.outlets.map((o) => L.latLngBounds([[o.latitude, o.longitude], [o.latitude, o.longitude]]))];
-        if (semua.length) map.fitBounds(semua.reduce((a, b) => a.extend(b)), { padding: [20, 20] });
+        if (semua.length) map.fitBounds(semua.reduce((a, b) => a.extend(b), L.latLngBounds([])), { padding: [20, 20] });
     }
 }
 
