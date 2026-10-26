@@ -1,0 +1,1 @@
+import{A as e,D as t,_ as n}from"./app-_0T0as_X.js";import{r}from"./Input--IBcAGKx.js";var i={},a={class:`mt-1 mb-0 text-xs text-red-600`};function o(r,i){return t(),n(`p`,a,[e(r.$slots,`default`)])}var s=r(i,[[`render`,o]]);export{s as t};
