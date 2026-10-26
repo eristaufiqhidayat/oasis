@@ -16,7 +16,7 @@ php artisan test --filter=NamaTest          # single test class/method
 vendor/bin/pint                # code style (Laravel Pint)
 php artisan migrate --seed     # schema + reference data (roles, admin, channels, categories, schemes)
 php artisan db:seed --class=DemoSeeder      # demo data (2 depots, full day of transactions)
-php artisan db:seed --class=DemoMotorisSeeder # demo: 10 motoris, 5 areas Depo Bekasi, 200 sales/day Mon–Sat from 13 Oct to tomorrow (~Rp500 jt; DEMO_FROM/DEMO_TO)
+php artisan db:seed --class=DemoMotorisSeeder # demo: 8 regions, 16 depots, 40 motoris, 800 sales/day Mon–Sat 13 Oct–tomorrow, ~Rp300 jt/day ±10% (DEMO_FROM/DEMO_TO/DEMO_DAILY; ~5 min)
 php artisan oasis:impor-master [--csv=dir] [--only=depo,area,...]   # import master data from the old app
 php artisan oasis:buat-admin admin          # create/reset super admin
 ```
