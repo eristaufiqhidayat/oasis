@@ -44,6 +44,18 @@
     --color-ink-muted: #5e6e82;
 }
 
+/* Palet grafik (urutan tetap, lolos uji buta warna untuk pasangan bersebelahan di latar putih). */
+:root {
+    --chart-1: #3a4bb0;
+    --chart-2: #eb6834;
+    --chart-3: #18a6b1;
+    --chart-4: #eda100;
+    --chart-5: #e87ba4;
+    --chart-single: #293694;
+    --chart-accent: #18a6b1;
+    --chart-grid: #eceef3;
+}
+
 body { background: var(--color-surface); font-size: .875rem; }
 /* Warna sidebar mengikuti warna korporat Oasis (gradasi biru navy logo). */
 /* z-index eksplisit: tanpa ini .sidebar diperlakukan sebagai z-index:0 di root stacking context (position:fixed
@@ -413,10 +425,56 @@ main { margin-left: 260px; padding: calc(3.5rem + 1rem) 1.5rem 1.5rem; }
     .progress-bar-warning { @apply bg-amber-500; }
     .progress-bar-danger { @apply bg-red-600; }
 
-    .bar-chart { @apply flex h-40 items-end gap-1; }
-    .bar-chart-col { @apply flex h-full flex-1 flex-col items-center justify-end gap-1; }
-    .bar-chart-bar { @apply w-full rounded-t bg-blue-600/80 transition-all hover:bg-blue-600; }
-    .bar-chart-label { @apply text-[0.6rem] text-gray-400; }
+    /* Grafik (ColumnChart, BarList, DonutChart, StackedBar, ChartCard). Tanda data tipis, grid garis rambut. */
+    .chart-card .card-body { @apply relative; }
+    .chart-box { @apply relative; }
+    .chart-grid line { stroke: var(--chart-grid); stroke-width: 1; shape-rendering: crispEdges; }
+    .chart-axis-text { @apply fill-gray-500 text-[11px] tabular-nums; }
+    .chart-column { fill: var(--chart-single); transition: opacity .15s; }
+    .chart-column-accent { fill: var(--chart-accent); }
+    .chart-average { stroke: #9ca3af; stroke-width: 1; shape-rendering: crispEdges; }
+    .chart-hit { fill: transparent; cursor: default; outline: none; }
+    .chart-hit:hover, .chart-hit:focus-visible { fill: rgb(41 54 148 / .05); }
+    .chart-empty { @apply py-6 text-center text-sm text-gray-500; }
+    .chart-view-toggle { @apply inline-flex shrink-0 items-center gap-1 rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 hover:border-blue-300 hover:text-blue-700; }
+    .chart-view-toggle svg { @apply h-3.5 w-3.5; }
+    .chart-tooltip { @apply pointer-events-none absolute z-20 min-w-36 -translate-x-1/2 -translate-y-[calc(100%+10px)] rounded-md border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg; }
+    .chart-tooltip-title { @apply mb-1 font-medium text-gray-500; }
+    .chart-tooltip-row { @apply mb-0 flex items-center gap-2 whitespace-nowrap; }
+    .chart-tooltip-row strong { @apply text-sm text-gray-900; }
+    .chart-key-line { @apply inline-block h-0.5 w-3 rounded-full; }
+    .chart-key-swatch { @apply inline-block h-2.5 w-2.5 shrink-0 rounded-sm; }
+    .chart-legend { @apply mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-700; }
+    .chart-legend li { @apply flex items-center gap-1.5; }
+    .chart-legend-stacked { @apply mt-0 flex-col flex-nowrap gap-y-2; }
+
+    .bar-list { @apply m-0 flex list-none flex-col gap-2.5 p-0; }
+    .bar-list-row { @apply flex items-start gap-2; }
+    .bar-list-rank { @apply w-4 shrink-0 pt-px text-end text-xs tabular-nums text-gray-400; }
+    .bar-list-text { @apply flex min-w-0 flex-1 flex-col gap-1; }
+    .bar-list-label { @apply truncate text-xs text-gray-700; }
+    .bar-list-track { @apply flex items-center gap-2; }
+    .bar-list-bar { @apply h-2.5 rounded-r-sm; background: var(--chart-single); }
+    .bar-list-value { @apply shrink-0 text-xs font-semibold tabular-nums text-gray-800; }
+
+    .donut { @apply flex flex-col items-center gap-4 sm:flex-row sm:items-center; }
+    .donut-figure { @apply shrink-0; }
+    .donut-slice { outline: none; transition: opacity .15s; }
+    .donut-slice:hover, .donut-slice:focus-visible { opacity: .85; }
+    .donut-center-label { @apply fill-gray-500 text-[10px]; }
+    .donut-center-value { @apply fill-gray-900 text-[15px] font-semibold; }
+    .donut .chart-legend { @apply w-full; }
+
+    .stacked + .stacked { @apply mt-4; }
+    .stacked-title { @apply mb-1.5 text-xs font-medium text-gray-600; }
+    .stacked-bar { @apply flex h-3 w-full gap-0.5 overflow-hidden rounded-sm; }
+    .stacked-bar-empty { @apply bg-gray-100; }
+    .stacked-segment { @apply h-full min-w-[2px] basis-0; }
+    .stacked-segment:first-child { @apply rounded-l-sm; }
+    .stacked-segment:last-child { @apply rounded-r-sm; }
+
+    .hero-figure { @apply mb-0 text-3xl font-semibold text-gray-900; }
+    .hero-meta { @apply flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500; }
 
     .link-strong { @apply font-medium text-blue-700 hover:underline; }
     .text-variance-minus { @apply font-semibold text-red-600; }
