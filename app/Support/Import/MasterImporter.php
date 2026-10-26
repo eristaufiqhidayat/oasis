@@ -2,6 +2,7 @@
 
 namespace App\Support\Import;
 
+use App\Console\Commands\CleanNonOasisProducts;
 use App\Enums\OutletStatus;
 use App\Enums\Position;
 use App\Models\Depot;
@@ -239,6 +240,13 @@ class MasterImporter
 
         foreach ($this->source->rows('mk_produk', ['id', 'kode', 'nama', 'harga_jual']) as $row) {
             $name = trim($row['nama']);
+
+            // Hanya produk Oasis yang dipakai; material/merek lain dari aplikasi lama tidak diimpor.
+            if (! CleanNonOasisProducts::isOasis($name)) {
+                $this->stats['produk']['dilewati']++;
+
+                continue;
+            }
             $id = $this->upsert(Product::class, 'produk', (int) $row['id'], [
                 'sku' => $this->uniqueCode('products', 'sku', $row['kode'] ?: 'MK'.$row['id'], 'legacy_id', $row['id']),
                 'name' => $name,

@@ -74,6 +74,15 @@ php artisan oasis:impor-master                # depo, area+polygon, karyawan, ou
 php artisan optimize:clear && php artisan optimize
 ```
 
+Produk yang namanya tidak memuat "Oasis" (material/merek lain) tidak ikut diimpor. Untuk membersihkan produk non-Oasis yang sudah terlanjur masuk:
+
+```bash
+php artisan oasis:hapus-produk-non-oasis              # lihat daftar dulu (tidak mengubah apa pun)
+php artisan oasis:hapus-produk-non-oasis --jalankan   # hapus; --kecuali=SKU untuk yang tetap disimpan
+```
+
+Produk tanpa riwayat transaksi dihapus permanen. Produk yang sudah punya riwayat (mutasi, muatan, penjualan) dinonaktifkan dan stok gudangnya dinolkan lewat dokumen penyesuaian, supaya laporan lama tetap utuh.
+
 `oasis:impor-master` bisa diulang (data dicocokkan lewat `legacy_id`), atau membaca CSV: `--csv=/path/folder` (file `mk_depo.csv`, `mk_area.csv`, `area_polygon.csv`, `mk_karyawan.csv`, `mk_outlet.csv`, `mk_produk.csv`, `users.csv`). Password akun lama ikut terbawa. Transaksi lama tidak diimpor.
 
 Setelah impor: isi **harga per depo** (Master › Harga Jual), **rute** motoris, **stok awal** (Gudang › Penerimaan), **target bulan berjalan**, dan cek **skema insentif**.

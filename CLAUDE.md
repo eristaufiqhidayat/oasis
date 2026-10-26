@@ -19,6 +19,7 @@ php artisan db:seed --class=DemoSeeder      # demo data (2 depots, full day of t
 php artisan db:seed --class=DemoMotorisSeeder # demo: 8 regions, 16 depots, 40 motoris, 800 sales/day Mon–Sat 13 Oct–tomorrow, ~Rp300 jt/day ±10% (DEMO_FROM/DEMO_TO/DEMO_DAILY; ~5 min)
 php artisan oasis:impor-master [--csv=dir] [--only=depo,area,...]   # import master data from the old app
 php artisan oasis:buat-admin admin          # create/reset super admin
+php artisan oasis:hapus-produk-non-oasis [--jalankan] [--kecuali=SKU]   # list (default) / remove products whose name lacks "Oasis"; with history → deactivate + zero warehouse stock
 ```
 
 Tests use in-memory SQLite (`tests/Concerns/BuildsOasis.php` has fixture builders; `TestCase` calls `withoutVite()`). `tests/Feature/Web/AccessTest` opens every sidebar page with `DemoSeeder` data and asserts the Vue page file exists — keep it green when adding menus. Frontend can only be built where npm works (GitHub Actions `build-deploy.yaml` on push to `main` builds `public/build` into branch `deploy`).

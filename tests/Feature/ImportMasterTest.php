@@ -46,7 +46,10 @@ class ImportMasterTest extends TestCase
             ['id' => 41, 'kode' => 'OUT1', 'nama' => 'Warung A', 'alamat' => 'Jl. A', 'area_id' => 21, 'kecamatan' => 'Coblong', 'kota_kabupaten' => 'Bandung', 'latitude' => '-6.5', 'longitude' => '107.5', 'status_fiktif' => ''],
             ['id' => 42, 'kode' => 'OUT2', 'nama' => 'Tanpa area', 'alamat' => '', 'area_id' => 99, 'kecamatan' => '', 'kota_kabupaten' => '', 'latitude' => '', 'longitude' => '', 'status_fiktif' => ''],
         ]);
-        $csv('mk_produk', [['id' => 51, 'kode' => 'G19', 'nama' => 'Oasis Galon 19L', 'harga_jual' => '20000.00']]);
+        $csv('mk_produk', [
+            ['id' => 51, 'kode' => 'G19', 'nama' => 'Oasis Galon 19L', 'harga_jual' => '20000.00'],
+            ['id' => 52, 'kode' => 'TTP', 'nama' => 'Tutup galon + segel', 'harga_jual' => '500.00'],
+        ]);
         $csv('users', [['id' => 1, 'name' => 'Sales Satu', 'username' => 'Sales1', 'password' => Hash::make('lama123'), 'kategori' => 'sales', 'karyawan_id' => 32, 'aktif' => 1, 'wajib_ganti_password' => 0]]);
     }
 
@@ -81,6 +84,7 @@ class ImportMasterTest extends TestCase
         $this->assertSame(1, Outlet::count());
         $this->assertSame($territory->id, Outlet::first()->territory_id);
         $this->assertTrue(Product::where('sku', 'G19')->value('tracks_container'));
+        $this->assertFalse(Product::where('name', 'Tutup galon + segel')->exists());
 
         $user = User::where('username', 'sales1')->firstOrFail();
         $this->assertSame($sales->id, $user->employee_id);
