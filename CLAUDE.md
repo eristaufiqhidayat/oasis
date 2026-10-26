@@ -16,6 +16,7 @@ php artisan test --filter=NamaTest          # single test class/method
 vendor/bin/pint                # code style (Laravel Pint)
 php artisan migrate --seed     # schema + reference data (roles, admin, channels, categories, schemes)
 php artisan db:seed --class=DemoSeeder      # demo data (2 depots, full day of transactions)
+php artisan db:seed --class=PondokKopiSeeder # sample check-in today: 3 motoris, 24 outlets in Pondok Kopi (Depo Bekasi)
 php artisan oasis:impor-master [--csv=dir] [--only=depo,area,...]   # import master data from the old app
 php artisan oasis:buat-admin admin          # create/reset super admin
 ```
