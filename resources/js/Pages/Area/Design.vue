@@ -361,7 +361,10 @@ function cariAlamat(e) {
         </Card>
 
         <Card body-class="card-body p-2">
-            <div ref="wadah" class="h-155 rounded-md" :class="{ 'cursor-crosshair': menggambar }"></div>
+            <!-- Class mode gambar di pembungkus: elemen peta dikelola Leaflet, class-nya tidak boleh ditimpa Vue. -->
+            <div class="peta-area" :class="{ 'is-menggambar': menggambar }">
+                <div ref="wadah" class="h-155 rounded-md"></div>
+            </div>
         </Card>
 
         <Modal :show="modalSimpan" title="Simpan Area Baru" @close="modalSimpan = false">
