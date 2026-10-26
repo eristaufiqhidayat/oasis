@@ -74,4 +74,18 @@ class DemoMotorisSeederTest extends TestCase
         $this->assertSame(10, Trip::whereIn('employee_id', $ids)->whereDate('date', '2026-10-27')->where('status', TripStatus::Returned->value)->count());
         $this->assertSame(600, Sale::whereIn('employee_id', $ids)->count());
     }
+
+    public function test_muatan_terbuka_di_tanggal_lebih_baru_tidak_menghalangi_riwayat(): void
+    {
+        DemoMotorisSeeder::$from = DemoMotorisSeeder::$to = '2026-10-26';
+        $this->seed(DemoMotorisSeeder::class);
+
+        DemoMotorisSeeder::$from = '2026-10-23';
+        DemoMotorisSeeder::$to = '2026-10-27';
+        $this->seed(DemoMotorisSeeder::class);
+
+        $ids = $this->salesmanIds();
+        $this->assertSame(40, Trip::whereIn('employee_id', $ids)->where('status', TripStatus::Closed->value)->count());
+        $this->assertSame(10, Trip::whereIn('employee_id', $ids)->where('status', TripStatus::Returned->value)->whereDate('date', '2026-10-27')->count());
+    }
 }

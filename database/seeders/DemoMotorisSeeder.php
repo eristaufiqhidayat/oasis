@@ -186,13 +186,13 @@ class DemoMotorisSeeder extends Seeder
         }
     }
 
-    /** Muatan motoris yang masih terbuka dari hari sebelumnya: bongkar semua sisa, setor sesuai sistem, setujui. */
+    /** Muatan motoris yang masih terbuka di tanggal lain (mis. dari versi seeder sebelumnya): bongkar semua sisa, setor sesuai sistem, setujui. */
     private function closeOpenTrips(Employee $salesman, Carbon $day): void
     {
         $trips = app(TripService::class);
         $settle = app(SettlementService::class);
 
-        $open = Trip::where('employee_id', $salesman->id)->whereDate('date', '<', $day)
+        $open = Trip::where('employee_id', $salesman->id)->whereDate('date', '!=', $day)
             ->whereNotIn('status', [TripStatus::Closed->value, TripStatus::Cancelled->value])->get();
 
         foreach ($open as $trip) {
