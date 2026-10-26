@@ -1,0 +1,1 @@
+import{A as e,D as t,V as n,_ as r}from"./app-_0T0as_X.js";var i={__name:`Alert`,props:{variant:{type:String,default:`info`}},setup(i){return(a,o)=>(t(),r(`div`,{class:n([`alert`,`alert-${i.variant}`])},[e(a.$slots,`default`)],2))}};export{i as t};
