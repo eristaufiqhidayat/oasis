@@ -46,7 +46,15 @@ class LegacySource
         }
 
         if ($this->connection) {
-            foreach (DB::connection($this->connection)->table($table)->orderBy(DB::raw('1'))->lazy(1000) as $row) {
+            $query = DB::connection($this->connection)->table($table);
+
+            // Tabel besar (mk_outlet bisa ratusan ribu baris): ambil per blok berdasarkan id, bukan OFFSET
+            // yang makin lambat di blok belakang.
+            $rows = Schema::connection($this->connection)->hasColumn($table, 'id')
+                ? $query->lazyById(2000, 'id')
+                : $query->orderBy(DB::raw('1'))->lazy(2000);
+
+            foreach ($rows as $row) {
                 yield (array) $row;
             }
 

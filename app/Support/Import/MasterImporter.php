@@ -6,7 +6,6 @@ use App\Enums\OutletStatus;
 use App\Enums\Position;
 use App\Models\Depot;
 use App\Models\Employee;
-use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Role;
@@ -152,8 +151,14 @@ class MasterImporter
         }
     }
 
+    /** Outlet bisa ratusan ribu baris: disimpan per blok 1.000 baris dengan upsert, bukan per baris. */
     private function outlets(): void
     {
+        $existing = DB::table('outlets')->whereNotNull('legacy_id')->pluck('legacy_id', 'id')->flip()->all();
+        $codes = DB::table('outlets')->pluck('legacy_id', 'code')->all();
+        $batch = [];
+        $now = now()->toDateTimeString();
+
         foreach ($this->source->rows('mk_outlet') as $row) {
             $territory = $this->territories[(int) $row['area_id']] ?? null;
             $depot = $territory ? $this->territoryDepot[$territory] : null;
@@ -164,21 +169,53 @@ class MasterImporter
                 continue;
             }
 
+            $legacyId = (int) $row['id'];
             $fictitious = in_array(Str::lower((string) ($row['status_fiktif'] ?? '')), ['ya', 'yes', '1', 'true', 'fiktif'], true);
 
-            $this->upsert(Outlet::class, 'outlet', (int) $row['id'], [
-                'code' => $this->uniqueCode('outlets', 'code', $row['kode'] ?: 'MK'.$row['id'], 'legacy_id', $row['id']),
-                'name' => trim((string) ($row['nama'] ?: 'Outlet '.$row['id'])),
+            // Kode unik: bila sudah dipakai outlet lain, tambah akhiran -2, -3, …
+            $base = Str::limit(trim((string) ($row['kode'] ?: 'MK'.$legacyId)), 36, '');
+            $code = $base;
+            for ($i = 2; array_key_exists($code, $codes) && (int) $codes[$code] !== $legacyId; $i++) {
+                $code = "{$base}-{$i}";
+            }
+            $codes[$code] = $legacyId;
+
+            $this->stats['outlet'][isset($existing[$legacyId]) ? 'diperbarui' : 'baru']++;
+            $batch[] = [
+                'legacy_id' => $legacyId,
+                'code' => $code,
+                'name' => Str::limit(trim((string) ($row['nama'] ?: 'Outlet '.$legacyId)), 255, ''),
                 'address' => $row['alamat'] ? Str::limit((string) $row['alamat'], 255, '') : null,
-                'district' => $row['kecamatan'] ?? null,
-                'city' => $row['kota_kabupaten'] ?? null,
+                'district' => $row['kecamatan'] ? Str::limit((string) $row['kecamatan'], 255, '') : null,
+                'city' => $row['kota_kabupaten'] ? Str::limit((string) $row['kota_kabupaten'], 255, '') : null,
                 'latitude' => $this->coordinate($row['latitude'] ?? null, 90),
                 'longitude' => $this->coordinate($row['longitude'] ?? null, 180),
                 'depot_id' => $depot,
                 'territory_id' => $territory,
-                'status' => $fictitious ? OutletStatus::Inactive : OutletStatus::Active,
-            ]);
+                'status' => ($fictitious ? OutletStatus::Inactive : OutletStatus::Active)->value,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            if (count($batch) >= 1000) {
+                $this->flushOutlets($batch);
+            }
         }
+
+        $this->flushOutlets($batch);
+    }
+
+    private function flushOutlets(array &$batch): void
+    {
+        if ($batch === []) {
+            return;
+        }
+
+        DB::table('outlets')->upsert($batch, ['legacy_id'], [
+            'code', 'name', 'address', 'district', 'city', 'latitude', 'longitude', 'depot_id', 'territory_id', 'status', 'updated_at',
+        ]);
+        $this->say('  … '.number_format($this->stats['outlet']['baru'] + $this->stats['outlet']['diperbarui'], 0, ',', '.').' outlet');
+        $batch = [];
     }
 
     private function products(): void
