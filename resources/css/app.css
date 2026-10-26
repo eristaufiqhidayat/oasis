@@ -443,6 +443,7 @@ main { margin-left: 260px; padding: calc(3.5rem + 1rem) 1.5rem 1.5rem; }
     .chart-tooltip-row { @apply mb-0 flex items-center gap-2 whitespace-nowrap; }
     .chart-tooltip-row strong { @apply text-sm text-gray-900; }
     .chart-key-line { @apply inline-block h-0.5 w-3 rounded-full; }
+    .chart-key-average { background: #9ca3af; }
     .chart-key-swatch { @apply inline-block h-2.5 w-2.5 shrink-0 rounded-sm; }
     .chart-legend { @apply mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-700; }
     .chart-legend li { @apply flex items-center gap-1.5; }
@@ -457,7 +458,7 @@ main { margin-left: 260px; padding: calc(3.5rem + 1rem) 1.5rem 1.5rem; }
     .bar-list-bar { @apply h-2.5 rounded-r-sm; background: var(--chart-single); }
     .bar-list-value { @apply shrink-0 text-xs font-semibold tabular-nums text-gray-800; }
 
-    .donut { @apply flex flex-col items-center gap-4 sm:flex-row sm:items-center; }
+    .donut { @apply flex flex-col items-center gap-4; }
     .donut-figure { @apply shrink-0; }
     .donut-slice { outline: none; transition: opacity .15s; }
     .donut-slice:hover, .donut-slice:focus-visible { opacity: .85; }

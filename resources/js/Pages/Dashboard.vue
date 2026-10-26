@@ -66,7 +66,8 @@ const areaItems = computed(() => props.charts.byArea.items.map((a) => ({
     sub: a.depots ? `${a.depots} depo` : `${angka(a.transactions)} trx`,
 })));
 const salesmen = computed(() => props.charts.topSalesmen.map((m) => ({ key: `${m.name}-${m.depot}`, label: m.name, sub: m.depot, value: m.total })));
-const products = computed(() => props.charts.products.map((p) => ({ label: p.name, value: p.total, sub: `${angka(p.qty)} terjual` })));
+// Semua produk bermerek Oasis: awalan "Oasis" dibuang di legenda supaya nama yang membedakan tidak terpotong.
+const products = computed(() => props.charts.products.map((p) => ({ label: p.name.replace(/^Oasis\s+/i, ''), value: p.total, sub: `${angka(p.qty)} terjual` })));
 const outcomes = computed(() => props.charts.outcomes.map((o) => ({ label: o.label, value: o.value })));
 const payments = computed(() => props.charts.payments.map((p) => ({ label: p.label, value: p.value })));
 
@@ -129,7 +130,7 @@ const tabelJam = computed(() => props.charts.hours.map((h) => ({ jam: `${String(
                         </dl>
                     </div>
                 </template>
-                <ColumnChart :items="daily" :format="rupiah" :axis-format="rupiahRingkas" series-label="Omzet" :highlight-key="range.to" average :height="240" />
+                <ColumnChart :items="daily" :format="rupiah" :axis-format="rupiahRingkas" series-label="Omzet" :highlight-key="range.to" highlight-label="Hari terakhir" average :height="240" />
             </ChartCard>
 
             <ChartCard
@@ -181,7 +182,7 @@ const tabelJam = computed(() => props.charts.hours.map((h) => ({ jam: `${String(
                 :rows="tabelJam"
                 :numeric="['transaksi', 'omzet']"
             >
-                <ColumnChart :items="hours" :format="angka" series-label="Transaksi" :highlight-key="jamTersibuk?.hour" :height="180" :label-every="1" />
+                <ColumnChart :items="hours" :format="angka" series-label="Transaksi" :highlight-key="jamTersibuk?.hour" :height="180" />
             </ChartCard>
         </div>
 

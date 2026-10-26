@@ -12,6 +12,7 @@ const props = defineProps({
     axisFormat: { type: Function, default: null },
     seriesLabel: { type: String, default: 'Nilai' },
     highlightKey: { type: [String, Number], default: null },
+    highlightLabel: { type: String, default: 'Disorot' },
     average: { type: Boolean, default: false },
     height: { type: Number, default: 220 },
     // Tampilkan label sumbu-x setiap n kolom (otomatis bila null).
@@ -41,7 +42,8 @@ const kolom = computed(() => props.items.map((item, i) => {
         x,
         tengah: pad.left + slot.value * i + slot.value / 2,
         path: pathKolom(x, top, lebarBatang.value, pad.top + plotH.value - top),
-        tampilLabel: i % setiap.value === 0 || i === props.items.length - 1,
+        // Hitung dari kolom terakhir supaya kolom terbaru selalu berlabel dan label tidak bertumpuk di ujung.
+        tampilLabel: (props.items.length - 1 - i) % setiap.value === 0,
     };
 }));
 
@@ -72,10 +74,7 @@ function tampilkan(event, item) {
                         :class="{ 'chart-column-accent': k.key === highlightKey }"
                     />
                 </g>
-                <g v-if="average && rata > 0">
-                    <line class="chart-average" :x1="pad.left" :x2="width - pad.right" :y1="y(rata)" :y2="y(rata)" />
-                    <text class="chart-axis-text" :x="width - pad.right" :y="y(rata) - 6" text-anchor="end">Rata-rata {{ format(Math.round(rata)) }}</text>
-                </g>
+                <line v-if="average && rata > 0" class="chart-average" :x1="pad.left" :x2="width - pad.right" :y1="y(rata)" :y2="y(rata)" />
                 <g class="chart-axis-text" text-anchor="middle">
                     <template v-for="k in kolom" :key="k.key">
                         <text v-if="k.tampilLabel" :x="k.tengah" :y="height - 8">{{ k.short ?? k.label }}</text>
@@ -101,6 +100,11 @@ function tampilkan(event, item) {
                 </g>
             </svg>
         </div>
+        <ul v-if="average && rata > 0" class="chart-legend">
+            <li><span class="chart-key-swatch" style="background: var(--chart-single)"></span>{{ seriesLabel }}</li>
+            <li v-if="highlightKey !== null && items.some((i) => i.key === highlightKey)"><span class="chart-key-swatch" style="background: var(--chart-accent)"></span>{{ highlightLabel }}</li>
+            <li><span class="chart-key-line chart-key-average"></span>Rata-rata {{ fmtSumbu(Math.round(rata)) }}</li>
+        </ul>
         <ChartTooltip :tip="tip" />
     </div>
 </template>
