@@ -15,9 +15,13 @@ tombol) dan toska `#18a6b1` (aksen menu aktif, notifikasi). Palet ada di `@theme
 Grup Warehouse (loading/retur barang, setoran, setor margin, distributor), penggajian &
 potongan gaji, izin/sakit, absensi SSK, insentif koordinator, outlet duplikat/fiktif, super
 admin & user lainnya, data karyawan, surat peringatan, lap. karyawan/user, panduan,
-pengumuman, produk/kategori/brand/satuan, master area (design polygon), wilayah depo, master
+pengumuman, produk/kategori/brand/satuan, wilayah depo, master
 project, setting target, data wilayah (provinsi s/d kelurahan), kategori user/karyawan/outlet,
 rumus insentif poin sales & koordinator, dan template barang canvassing.
+
+Menu **Master Area** tetap ada (dibawa kembali) beserta halaman **Design Polygon Area**
+(`/master_area/design_area`): daftarnya dibaca dari `area_polygon`, tabel yang sama yang
+dipakai sebagai sumber area outlet (`mk_area`).
 
 ## Struktur
 

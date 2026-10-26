@@ -28,7 +28,7 @@ class LoginTest extends TestCase
     {
         $this->get('/login')->assertOk()->assertInertia(fn (Assert $page) => $page->component('Auth/Login'));
 
-        foreach (['/home', '/tipe_outlet', '/tracking_koordinator_history_location', '/barang_canvassing/add'] as $url) {
+        foreach (['/home', '/tipe_outlet', '/tracking_koordinator_history_location', '/master_area/design_area', '/barang_canvassing/add'] as $url) {
             $this->get($url)->assertRedirect('/login');
         }
     }

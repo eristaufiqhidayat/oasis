@@ -36,6 +36,7 @@ class MenuMotorisTest extends TestCase
         $this->assertSame('Lap. Join Visit', $judul['lap_join_visit']);
         $this->assertSame('Summary All Depo', $judul['summary_all_depo']);
         $this->assertSame('Join Visit', $judul['join_visit']);
+        $this->assertSame('Master Area', $judul['master_area']);
     }
 
     public function test_daftar_menu_motoris_hanya_berisi_slug_yang_ada(): void

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SummaryDepoController;
 use App\Http\Controllers\Auth\DemoLoginController;
 use App\Http\Controllers\Auth\GantiPasswordController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DesignAreaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OutletBaruController;
 use App\Http\Controllers\TrackingKoordinatorController;
@@ -47,6 +48,15 @@ Route::middleware(['auth', 'wajib-ganti-password'])->group(function () {
         ->middleware('hak:tracking_sales_history_location')->name('tracking-sales.locations');
     Route::get('/tracking_sales_history_location/counts', [TrackingSalesController::class, 'counts'])
         ->middleware('hak:tracking_sales_history_location')->name('tracking-sales.counts');
+
+    // Design polygon area (menu Master Area); data di area_polygon / area_depo, sumber area outlet (mk_area).
+    Route::prefix('master_area/design_area')->name('design-area.')->controller(DesignAreaController::class)->group(function () {
+        Route::get('/', 'index')->middleware('hak:master_area')->name('index');
+        Route::get('/options', 'options')->middleware('hak:master_area')->name('options');
+        Route::get('/areas', 'areas')->middleware('hak:master_area')->name('areas');
+        Route::post('/areas', 'store')->middleware('hak:master_area,ubah')->name('store');
+        Route::delete('/areas/{id}', 'destroy')->middleware('hak:master_area,hapus')->whereNumber('id')->name('destroy');
+    });
 
     // Ikon "Tambah" di kanan atas: formnya belum dibuat di versi Laravel.
     Route::inertia('/barang_canvassing/add', 'Menu/ComingSoon', [

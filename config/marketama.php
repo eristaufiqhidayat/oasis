@@ -49,7 +49,7 @@ return [
         // User dan Karyawan (akun login aplikasi HP, role & hak akses)
         'user_sales', 'user_koordinator', 'role',
         // Master Data & Pengaturan yang dibaca aplikasi HP / laporan motoris
-        'kuota_motoris', 'master_depo', 'holiday_dates', 'waktu_aktif_app', 'produk_kompetitor', 'tipe_outlet',
+        'kuota_motoris', 'master_area', 'master_depo', 'holiday_dates', 'waktu_aktif_app', 'produk_kompetitor', 'tipe_outlet',
         'rumus_insentif_sales', 'sales_point_conversion_per_warehouse',
         // Grup A analisa menu (25 Okt 2026): dialihkan ke trx_* / mk_* (riwayat lama lewat enesis:migrasi-transaksi)
         'barang_canvassing', 'lap_barang_canvassing', 'lap_barang_habis_terjual', 'pengembalian_barang', 'lap_pengembalian_barang',
@@ -433,6 +433,11 @@ return [
                     'icon' => 'settings',
                     'id' => 'konfigurasi_group',
                     'children' => [
+                        [
+                            'slug' => 'master_area',
+                            'title' => 'Master Area',
+                            'icon' => 'map-pin',
+                        ],
                         [
                             'slug' => 'master_depo',
                             'title' => 'Master Warehouse / Depo',
@@ -935,6 +940,14 @@ return [
             'tables' => [],
             'same_as' => null,
         ],
+        // Daftar area (polygon) yang sama dengan halaman Design Area (master_area/design_area).
+        'master_area' => [
+            'title' => 'Master Area',
+            'tables' => [
+                'area_polygon',
+            ],
+            'same_as' => null,
+        ],
         'master_depo' => [
             'title' => 'Master Warehouse / Depo',
             'tables' => [
@@ -980,6 +993,21 @@ return [
     ],
 
     'tables' => [
+        'area_polygon' => [
+            'title' => 'Master Area',
+            'columns' => [
+                'code' => 'Kode',
+                'name' => 'Nama',
+                'warehouse' => 'Depo',
+                'branch_area' => 'Wilayah Depo',
+                'province' => 'Provinsi',
+                'city' => 'Kota / Kabupaten',
+                'district' => 'Kecamatan',
+                'village' => 'Kelurahan',
+                'outlet_count' => 'Total Toko',
+                'salesperson' => 'Nama Sales',
+            ],
+        ],
         'tracking_last_seen_sales' => [
             'title' => 'Tracking Last Seen Sales',
             'sumber' => SumberLastSeenSales::class,
