@@ -43,9 +43,9 @@ Semua markup UI **harus** disusun dari komponen reusable di `resources/js/Compon
 
 | Layer | Komponen |
 | --- | --- |
-| atoms | `BrandLogo`, `Button`, `Badge`, `Icon`, `Label`, `Input`, `Select`, `Textarea`, `Checkbox`, `Radio`, `FieldError`, `Tooltip` |
-| molecules | `Card`, `Alert`, `Modal`, `Pagination`, `PageHeader`, `PasswordInput`, `Flash`, `Breadcrumb`, `Tabs`, `Combobox`, `FilterBar`, `FormField`, `StatCard` |
-| organisms | `Sidebar` (dengan `partials/`), `Topbar`, `DataTable`, `SettingsSideNav` |
+| atoms | `BrandLogo`, `Button`, `Badge`, `Icon`, `Label`, `Input`, `Select`, `Textarea`, `Checkbox`, `Radio`, `FieldError`, `Tooltip`, `ChartTooltip` |
+| molecules | `Card`, `Alert`, `Modal`, `Pagination`, `PageHeader`, `PasswordInput`, `Flash`, `Breadcrumb`, `Tabs`, `Combobox`, `FilterBar`, `FormField`, `StatCard`, `ColumnChart`, `BarList`, `DonutChart`, `StackedBar` |
+| organisms | `Sidebar` (dengan `partials/`), `Topbar`, `DataTable`, `SettingsSideNav`, `ChartCard` |
 
 Aturan:
 - **Jangan** menulis ulang markup `<div class="card">`, `<button class="btn …">`, `<span class="badge …">`; pakai `<Card>`, `<Button>`, `<Badge>`, dst.
@@ -54,3 +54,4 @@ Aturan:
 - Variasi kecil = prop baru pada komponen yang ada, bukan salinan komponen.
 - Styling elemen berulang lewat class komponen pendek di `app.css` (`@layer components`); utility Tailwind langsung hanya untuk tata letak satu halaman, sesuai `docs/STYLE_GUIDE.md`.
 - Hanya ikon yang ada di `public/vendor/lucide/` yang bisa dipakai.
+- Grafik: SVG/HTML buatan sendiri (tanpa library chart), hitungan di `Support/chart.js`. Satu seri = `--chart-single`, sorotan = `--chart-accent`; banyak seri = `--chart-1…5` urutan tetap (lolos uji buta warna, jangan diacak/ditambah). Bungkus dengan `ChartCard` beri `columns`/`rows` supaya selalu ada tampilan tabel. Data Beranda dari `App\Services\DashboardService`.
