@@ -66,12 +66,12 @@ class MasterImporter
     private function depots(): void
     {
         $extra = [];
-        foreach ($this->source->rows('master_depo') as $row) {
+        foreach ($this->source->rows('master_depo', ['kode', 'nama', 'alamat', 'kota_kab', 'latitude', 'longitude']) as $row) {
             $extra[Str::lower(trim((string) ($row['kode'] ?? '')))] = $row;
             $extra[Str::lower(trim((string) ($row['nama'] ?? '')))] = $row;
         }
 
-        foreach ($this->source->rows('mk_depo') as $row) {
+        foreach ($this->source->rows('mk_depo', ['id', 'kode', 'nama', 'aktif']) as $row) {
             $info = $extra[Str::lower(trim((string) $row['kode']))] ?? $extra[Str::lower(trim((string) $row['nama']))] ?? [];
             $code = $this->uniqueCode('depots', 'code', $row['kode'] ?: 'D'.$row['id'], 'legacy_id', $row['id']);
 
@@ -90,7 +90,7 @@ class MasterImporter
     private function territories(): void
     {
         $boundaries = [];
-        foreach ($this->source->rows('area_polygon') as $row) {
+        foreach ($this->source->rows('area_polygon', ['id', 'source_id', 'code', 'polygon']) as $row) {
             $geo = $this->geometry($row['polygon'] ?? null);
             if ($geo) {
                 $boundaries['id:'.($row['source_id'] ?? '')] = $geo;
@@ -98,7 +98,7 @@ class MasterImporter
             }
         }
 
-        foreach ($this->source->rows('mk_area') as $row) {
+        foreach ($this->source->rows('mk_area', ['id', 'kode', 'nama', 'depo_id']) as $row) {
             $depot = $this->depots[(int) $row['depo_id']] ?? null;
 
             if (! $depot) {
@@ -123,7 +123,7 @@ class MasterImporter
         $positions = ['sales' => Position::Salesman, 'koordinator' => Position::Coordinator, 'supervisor' => Position::Coordinator, 'lainnya' => Position::Admin];
         $supervisors = [];
 
-        foreach ($this->source->rows('mk_karyawan') as $row) {
+        foreach ($this->source->rows('mk_karyawan', ['id', 'kategori', 'nama', 'depo_id', 'koordinator_id', 'no_hp', 'tanggal_mulai', 'aktif']) as $row) {
             $position = $positions[$row['kategori']] ?? Position::Admin;
             $joined = $this->date($row['tanggal_mulai'] ?? null);
 
@@ -159,7 +159,7 @@ class MasterImporter
         $batch = [];
         $now = now()->toDateTimeString();
 
-        foreach ($this->source->rows('mk_outlet') as $row) {
+        foreach ($this->source->rows('mk_outlet', ['id', 'kode', 'nama', 'alamat', 'area_id', 'kecamatan', 'kota_kabupaten', 'latitude', 'longitude', 'status_fiktif']) as $row) {
             $territory = $this->territories[(int) $row['area_id']] ?? null;
             $depot = $territory ? $this->territoryDepot[$territory] : null;
 
@@ -222,7 +222,7 @@ class MasterImporter
     {
         $today = Carbon::today()->toDateString();
 
-        foreach ($this->source->rows('mk_produk') as $row) {
+        foreach ($this->source->rows('mk_produk', ['id', 'kode', 'nama', 'harga_jual']) as $row) {
             $name = trim($row['nama']);
             $id = $this->upsert(Product::class, 'produk', (int) $row['id'], [
                 'sku' => $this->uniqueCode('products', 'sku', $row['kode'] ?: 'MK'.$row['id'], 'legacy_id', $row['id']),
@@ -241,7 +241,7 @@ class MasterImporter
         $roles = Role::pluck('id', 'slug');
         $map = ['super_admin' => 'super_admin', 'koordinator' => 'koordinator', 'sales' => 'sales', 'lainnya' => 'koordinator'];
 
-        foreach ($this->source->rows('users') as $row) {
+        foreach ($this->source->rows('users', ['id', 'name', 'username', 'password', 'kategori', 'karyawan_id', 'aktif', 'wajib_ganti_password']) as $row) {
             $username = Str::lower(trim((string) ($row['username'] ?? '')));
 
             if ($username === '' || ! isset($row['password'])) {

@@ -38,24 +38,34 @@ class LegacySource
             : is_file("{$this->folder}/{$table}.csv");
     }
 
-    /** @return Generator<int, array<string, mixed>> */
-    public function rows(string $table): Generator
+    /**
+     * Baris tabel sumber. Hanya kolom $columns yang diambil (kolom besar seperti JSON mentah tidak ikut);
+     * kolom yang tidak ada di sumber diisi null.
+     *
+     * @param  array<string>  $columns
+     * @return Generator<int, array<string, mixed>>
+     */
+    public function rows(string $table, array $columns): Generator
     {
         if (! $this->has($table)) {
             return;
         }
 
+        $blank = array_fill_keys($columns, null);
+
         if ($this->connection) {
-            $query = DB::connection($this->connection)->table($table);
+            $schema = Schema::connection($this->connection);
+            $available = array_values(array_intersect($columns, $schema->getColumnListing($table)));
+            $query = DB::connection($this->connection)->table($table)->select($available);
 
             // Tabel besar (mk_outlet bisa ratusan ribu baris): ambil per blok berdasarkan id, bukan OFFSET
             // yang makin lambat di blok belakang.
-            $rows = Schema::connection($this->connection)->hasColumn($table, 'id')
-                ? $query->lazyById(2000, 'id')
-                : $query->orderBy(DB::raw('1'))->lazy(2000);
+            $rows = in_array('id', $available, true)
+                ? $query->lazyById(1000, 'id')
+                : $query->orderBy($available[0])->lazy(1000);
 
             foreach ($rows as $row) {
-                yield (array) $row;
+                yield (array) $row + $blank;
             }
 
             return;
@@ -78,7 +88,7 @@ class LegacySource
             }
 
             $row = array_combine($header, array_pad(array_slice($values, 0, count($header)), count($header), null));
-            yield array_map(fn ($v) => $v === '' || $v === 'NULL' ? null : $v, $row);
+            yield array_intersect_key(array_map(fn ($v) => $v === '' || $v === 'NULL' ? null : $v, $row), $blank) + $blank;
         }
 
         fclose($handle);
