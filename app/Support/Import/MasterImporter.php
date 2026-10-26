@@ -154,11 +154,12 @@ class MasterImporter
         }
     }
 
-    /** Outlet bisa ratusan ribu baris: disimpan per blok 1.000 baris dengan upsert, bukan per baris. */
+    /**
+     * Outlet bisa jutaan baris: dibaca per blok dan disimpan per 500 baris dengan upsert. Tidak ada daftar
+     * semua outlet di memori; bentrok kode diperiksa per blok ke database.
+     */
     private function outlets(): void
     {
-        $existing = DB::table('outlets')->whereNotNull('legacy_id')->pluck('legacy_id', 'id')->flip()->all();
-        $codes = DB::table('outlets')->pluck('legacy_id', 'code')->all();
         $batch = [];
         $now = now()->toDateTimeString();
 
@@ -175,18 +176,9 @@ class MasterImporter
             $legacyId = (int) $row['id'];
             $fictitious = in_array(Str::lower((string) ($row['status_fiktif'] ?? '')), ['ya', 'yes', '1', 'true', 'fiktif'], true);
 
-            // Kode unik: bila sudah dipakai outlet lain, tambah akhiran -2, -3, …
-            $base = Str::limit(trim((string) ($row['kode'] ?: 'MK'.$legacyId)), 36, '');
-            $code = $base;
-            for ($i = 2; array_key_exists($code, $codes) && (int) $codes[$code] !== $legacyId; $i++) {
-                $code = "{$base}-{$i}";
-            }
-            $codes[$code] = $legacyId;
-
-            $this->stats['outlet'][isset($existing[$legacyId]) ? 'diperbarui' : 'baru']++;
-            $batch[] = [
+            $batch[$legacyId] = [
                 'legacy_id' => $legacyId,
-                'code' => $code,
+                'code' => Str::limit(trim((string) ($row['kode'] ?: 'MK'.$legacyId)), 28, ''),
                 'name' => Str::limit(trim((string) ($row['nama'] ?: 'Outlet '.$legacyId)), 255, ''),
                 'address' => $row['alamat'] ? Str::limit((string) $row['alamat'], 255, '') : null,
                 'district' => $row['kecamatan'] ? Str::limit((string) $row['kecamatan'], 255, '') : null,
@@ -200,7 +192,7 @@ class MasterImporter
                 'updated_at' => $now,
             ];
 
-            if (count($batch) >= 1000) {
+            if (count($batch) >= 500) {
                 $this->flushOutlets($batch);
             }
         }
@@ -208,16 +200,36 @@ class MasterImporter
         $this->flushOutlets($batch);
     }
 
+    /** @param array<int, array<string, mixed>> $batch legacy_id => baris */
     private function flushOutlets(array &$batch): void
     {
         if ($batch === []) {
             return;
         }
 
-        DB::table('outlets')->upsert($batch, ['legacy_id'], [
+        $known = DB::table('outlets')->whereIn('legacy_id', array_keys($batch))->pluck('legacy_id')->flip();
+        $taken = DB::table('outlets')->whereIn('code', array_column($batch, 'code'))->pluck('legacy_id', 'code');
+        $seen = [];
+
+        // Kode yang sudah dipakai outlet lain (atau dobel di blok ini) diberi akhiran id lama: unik dan tetap sama bila impor diulang.
+        foreach ($batch as $legacyId => &$row) {
+            $owner = $taken[$row['code']] ?? null;
+            if (($owner !== null && (int) $owner !== $legacyId) || isset($seen[$row['code']])) {
+                $row['code'] .= '-'.$legacyId;
+            }
+            $seen[$row['code']] = true;
+            $this->stats['outlet'][$known->has($legacyId) ? 'diperbarui' : 'baru']++;
+        }
+        unset($row);
+
+        DB::table('outlets')->upsert(array_values($batch), ['legacy_id'], [
             'code', 'name', 'address', 'district', 'city', 'latitude', 'longitude', 'depot_id', 'territory_id', 'status', 'updated_at',
         ]);
-        $this->say('  … '.number_format($this->stats['outlet']['baru'] + $this->stats['outlet']['diperbarui'], 0, ',', '.').' outlet');
+
+        $done = $this->stats['outlet']['baru'] + $this->stats['outlet']['diperbarui'];
+        if ($done % 10000 < 500) {
+            $this->say('  … '.number_format($done, 0, ',', '.').' outlet');
+        }
         $batch = [];
     }
 
