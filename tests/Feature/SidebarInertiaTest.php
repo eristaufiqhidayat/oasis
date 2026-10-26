@@ -116,4 +116,15 @@ class SidebarInertiaTest extends TestCase
                     ->contains('monitoring_harian_sales'))
             );
     }
+
+    public function test_halaman_akun_tidak_menimpa_prop_menu_sidebar(): void
+    {
+        // Regresi: halaman Akun dulu mengirim prop 'menu' berisi slug teks, sehingga sidebar error dan hilang.
+        foreach (['/user_sales', '/user_koordinator', '/user_sales/tambah'] as $url) {
+            $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page
+                ->where('menu', fn ($menu) => is_iterable($menu) && collect($menu)->isNotEmpty() && array_is_list(collect($menu)->all()))
+                ->where('menuAkun', ltrim(explode('/', ltrim($url, '/'))[0], '/'))
+            );
+        }
+    }
 }

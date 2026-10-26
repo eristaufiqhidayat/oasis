@@ -85,7 +85,8 @@ class AkunController extends Controller
             ->through(fn ($a) => $this->ringkasDaftar($a));
 
         return Inertia::render('Akun/Index', [
-            'menu' => $menu,
+            // Bukan 'menu': nama itu dipakai prop bersama (menu sidebar) dari HandleInertiaRequests.
+            'menuAkun' => $menu,
             'judul' => $this->judul($menu),
             'akun' => $akun,
             'jumlah' => $jumlah,
@@ -112,7 +113,7 @@ class AkunController extends Controller
         $sesiAktif = $sesi->firstWhere('revoked_at', null);
 
         return Inertia::render('Akun/Show', [
-            'menu' => $menu,
+            'menuAkun' => $menu,
             'judul' => $this->judul($menu),
             'akun' => $this->ringkasDetail($akun),
             'karyawan' => $karyawan ? ['id' => $karyawan->id, 'aktif' => $karyawan->aktif === null ? null : (bool) $karyawan->aktif] : null,
@@ -540,7 +541,7 @@ class AkunController extends Controller
             : null;
 
         return Inertia::render('Akun/Form', [
-            'menu' => $menu,
+            'menuAkun' => $menu,
             'judul' => $this->judul($menu),
             'akun' => $akun ? $this->ringkasDetail($akun) : null,
             'karyawan' => $karyawan,
@@ -683,7 +684,7 @@ class AkunController extends Controller
         Inertia::encryptHistory();
 
         return Inertia::render('Akun/Password', [
-            'menu' => $menu,
+            'menuAkun' => $menu,
             'judul' => $this->judul($menu),
             'akun' => ['id' => $akun->id, 'username' => $akun->username],
             'password' => $password,
