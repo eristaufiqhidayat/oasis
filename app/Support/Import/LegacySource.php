@@ -13,7 +13,17 @@ use RuntimeException;
  */
 class LegacySource
 {
+    /** @var (\Closure(string): void)|null */
+    public ?\Closure $logger = null;
+
     private function __construct(private ?string $connection, private ?string $folder) {}
+
+    private function log(string $message): void
+    {
+        if ($this->logger) {
+            ($this->logger)($message);
+        }
+    }
 
     public static function database(string $connection = 'legacy'): self
     {
@@ -55,14 +65,22 @@ class LegacySource
 
         if ($this->connection) {
             $schema = Schema::connection($this->connection);
-            $available = array_values(array_intersect($columns, $schema->getColumnListing($table)));
+            $listing = array_map('strtolower', $schema->getColumnListing($table));
+            $available = array_values(array_filter($columns, fn ($c) => in_array(strtolower($c), $listing, true)));
+
+            // Daftar kolom tidak terbaca (mis. skema berbeda): tetap pilih kolom yang diminta, jangan SELECT *.
+            if ($available === []) {
+                $available = $columns;
+            }
+
+            $this->log("  {$table}: kolom ".implode(', ', $available));
             $query = DB::connection($this->connection)->table($table)->select($available);
 
             // Tabel besar (mk_outlet bisa ratusan ribu baris): ambil per blok berdasarkan id, bukan OFFSET
             // yang makin lambat di blok belakang.
             $rows = in_array('id', $available, true)
-                ? $query->lazyById(1000, 'id')
-                : $query->orderBy($available[0])->lazy(1000);
+                ? $query->lazyById(500, 'id')
+                : $query->orderBy($available[0])->lazy(500);
 
             foreach ($rows as $row) {
                 yield (array) $row + $blank;

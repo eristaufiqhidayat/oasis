@@ -36,7 +36,10 @@ class MasterImporter
 
     private array $employees = [];
 
-    public function __construct(private LegacySource $source, private ?Closure $progress = null) {}
+    public function __construct(private LegacySource $source, private ?Closure $progress = null)
+    {
+        $this->source->logger = fn (string $m) => $this->say($m);
+    }
 
     public function run(array $only = []): array
     {
@@ -404,7 +407,7 @@ class MasterImporter
     private function say(string $message): void
     {
         if ($this->progress) {
-            ($this->progress)($message);
+            ($this->progress)($message.sprintf(' (memori %d MB)', memory_get_usage(true) / 1048576));
         }
     }
 }
